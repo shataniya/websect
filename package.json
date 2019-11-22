@@ -1,0 +1,24 @@
+{
+  "name": "websect",
+  "version": "1.0.0",
+  "description": "Similar to cheerio's quick capture of Web Information",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shataniya/websect.git"
+  },
+  "keywords": [
+    "web",
+    "websect",
+    "cheerio"
+  ],
+  "author": "sataniya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shataniya/websect/issues"
+  },
+  "homepage": "https://github.com/shataniya/websect#readme"
+}
