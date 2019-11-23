@@ -134,7 +134,7 @@ domparse.prototype.text = function(){
         return this.__arrs[0].innerHTML
     }
     if(this.__arrs == null){
-        return null
+        return this.__domstr
     }
     return this.__arrs.innerHTML
 }
@@ -676,6 +676,30 @@ domparse.prototype.getElementsByThreeTagNameAndClassName = function(tag1,class1,
     return this
 }
 
+function __info(str){
+    var ins = str.replace(/<([^<>]+)\/?>([\w\W]+?)<\/([^<>]+)>/g,"").replace(/<([^<>]+)\/?>/g,"").trim().split(/\n?\s+/g)
+    if(ins.length > 1){
+        return ins
+    }
+    return ins[0]
+}
+
+/* 
+* @function info
+* @discription Text obtained after filtering all tags
+* 
+*/
+domparse.prototype.info = function(){
+    if(Array.isArray(this.__arrs) && this.__arrs.length >= 1){
+        return __info(this.__arrs[0].innerHTML)
+    }
+    if(this.__arrs == null){
+        return __info(this.__domstr)
+    }
+    return __info(this.__arrs.innerHTML)
+}
+
+
 // 优先使用 标签名 来进行检索会提高效率
 domparse.prototype.find = function(){
     var name = Array.from(arguments)
@@ -809,16 +833,17 @@ module.exports = domparse
 
 // var s = `<div class="container">
 //             <ul class="slider-box">
-//                 <img class="link-title" src="http://demo1.com/title.png" >
 //                 <li class="slider-item">
 //                     <h1 class="title">slider-header1</h1>
 //                     <a class="item-link" href="http://demo1.com" target="_blank">
 //                         <img class="link-img" src="http://demo1.com/show.png" />
 //                         <span class="link-text">welcome to demo1.com</span>
-//                     </a>
+//                     </a>你是不是傻
+//                     <img class="link-title" src="http://demo1.com/title.png" >
 //                 </li>
 //                 <img class="link-title" src="http://demo2.com/title.png" >
 //                 <li class="slider-item">
+//                     我是第二个li
 //                     <h1 class="title">slider-header2</h1>
 //                     <a class="item-link" href="http://demo2.com" target="_blank">
 //                         <img class="link-img" src="http://demo2.com/show.png" />
@@ -827,6 +852,7 @@ module.exports = domparse
 //                 </li>
 //                 <img class="link-title" src="http://demo3.com/title.png" >
 //                 <li class="slider-view">
+//                     我是第三个li
 //                     <h1 class="title">slider-header3</h1>
 //                     <a class="item-link" href="http://demo3.com" target="_blank">
 //                         <img class="link-img" src="http://demo3.com/show.png" />
@@ -837,6 +863,6 @@ module.exports = domparse
 //         </div>`
 
 // var $ = domparse
-// $(s).find("ul.slider-box li.slider-view a").each(el=>{
-//     console.log(el)
+// var dm = $(s).find("li").each(el=>{
+//     console.log($(el).info())
 // })
