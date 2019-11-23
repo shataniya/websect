@@ -7,7 +7,7 @@ function complexdom(str){
         value:str,
         configurable:true
     })
-    this.type = "plain dom"
+    this.type = "complex dom"
     str.replace(plainreg,(match,key1,key2,key3)=>{
         this.innerHTML = key2
         var opentag = key1.trim().split(/\s+/g)[0]

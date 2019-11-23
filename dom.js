@@ -34,7 +34,7 @@ function dom(str,whole){
         })
     }
     if(simplereg.test(str)){
-        this.type = "simple dom"
+        this.type = "single dom"
         str.replace(simplereg,(match,key1)=>{
             key1 = key1.replace(/\/$/g,"").trim()
             var tag = key1.split(/\s+/g)[0]

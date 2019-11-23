@@ -167,10 +167,13 @@ domparse.prototype.getOneDoubleElementByTagName = function(name){
 }
 
 domparse.prototype.getDoubleComplexElementsByTagName = function(name){
-    var reg = new RegExp("<\\b"+name+"\\b([^<>]*)>([\\w\\W]+?)<\/\\b"+name+"\\b>")
+    var reg = new RegExp("<\\b"+name+"\\b([^<>]*)>([\\w\\W]+?)<\/\\b"+name+"\\b>","g")
+    var arrs = []
     this.__domstr.replace(reg,(match)=>{
-        console.log(match)
+        arrs.push(new complexdom(match,this.__domstr))
     })
+    this.__arrs = arrs
+    return this
 }
 // 根据 标签名 来获取双标签的字符串形式
 domparse.prototype.getDoubleStringArrayByTagName = function(name){
@@ -238,6 +241,11 @@ domparse.prototype.getElementsByClassName = function(){
 // 根据 标签名 和 类名 来获取双标签的字符串形式
 domparse.prototype.getDoubleStringArrayByTagNameAndClassName = function(name,...classname){
     var doms = this.getDoubleStringArrayByTagName(name).dom()
+    if(classname.length === 0){
+        // 说明没有类名，那么这个时候就应该调用 getDoubleStringArrayByTagName
+        this.__arrs = doms
+        return this
+    }
     var reg = new RegExp('<\\b'+name+'\\b([^<>]*)class="([^<>]*)\\b'+classname.join(" ")+'\\b([^<>]*)"([^<>]*)>([\\w\\W]+?)<\/\\b'+name+'\\b>')
     var ndoms = []
     doms.forEach(el=>{
@@ -271,6 +279,10 @@ domparse.prototype.getSingleStringArrayByTagName = function(name){
 // 根据 标签名 和 类名 来获取单标签的字符串形式，例如 img meta link input之类
 domparse.prototype.getSingleStringArrayByTagNameAndClassName = function(name,...classname){
     var doms = this.getSingleStringArrayByTagName(name).dom()
+    if(classname.length === 0){
+        this.__arrs = doms
+        return this
+    }
     this.__arrs = doms.filter(el=>new dom(el).hasClass(classname))
     return this
 }
@@ -278,6 +290,36 @@ domparse.prototype.getSingleStringArrayByTagNameAndClassName = function(name,...
 // 根据 标签名 和 类名 来获取单标签的dom解析形式
 domparse.prototype.getSingleElementsByTagNameAndClassName = function(name,...classname){
     this.__arrs = this.getSingleStringArrayByTagNameAndClassName(name,...classname).dom().map(el=>new dom(el))
+    return this
+}
+
+/* 
+* @function getStringArrayByTagNameAndClassName
+* @discription 
+* @param {string} name
+* @param classname
+*/
+domparse.prototype.getStringArrayByTagNameAndClassName = function(name,...classname){
+    if(isSingleElement(name)){
+        this.__arrs = this.getSingleStringArrayByTagNameAndClassName(name,...classname).dom()
+    }else{
+        this.__arrs = this.getDoubleStringArrayByTagNameAndClassName(name,...classname).dom()
+    }
+    return this
+}
+
+/* 
+* @function getElementsByTagNameAndClassName
+* @discription 
+* @param {string} name
+* @param classname
+*/
+domparse.prototype.getElementsByTagNameAndClassName = function(name,...classname){
+    if(isSingleElement(name)){
+        this.__arrs = this.getSingleElementsByTagNameAndClassName(name,...classname).dom()
+    }else{
+        this.__arrs = this.getDoubleElementsByTagNameAndClassName(name,...classname).dom()
+    }
     return this
 }
 
@@ -436,6 +478,204 @@ domparse.prototype.getSingleElementsByTagNameAndAttribute = function(name,key,va
     return this
 }
 
+/* 
+* @function getStringArrayByTwoTagName
+* @discription Get elements String by two tag names
+* @param tag1
+* @param tag2
+*/
+domparse.prototype.getStringArrayByTwoTagName = function(tag1,tag2){
+    var arrs = []
+    this.getDoubleStringArrayByTagName(tag1).each(el=>{
+        if(isSingleElement(tag2)){
+            arrs = arrs.concat(domparse(el).getSingleStringArrayByTagName(tag2).dom())
+        }else{
+            arrs = arrs.concat(domparse(el).getDoubleStringArrayByTagName(tag2).dom())
+        }
+    })
+    this.__arrs = arrs
+    return this
+}
+
+/* 
+* @function getElementsBywoTagName
+* @discription Get elements by two tag names
+* @param tag1
+* @param tag2
+*/
+domparse.prototype.getElementsByTwoTagName = function(tag1,tag2){
+    var arrs = []
+    this.getDoubleStringArrayByTagName(tag1).each(el=>{
+        if(isSingleElement(tag2)){
+            arrs = arrs.concat(domparse(el).getSingleElementsByTagName(tag2).dom())
+        }else{
+            var doms = domparse(el).getDoubleElementsByTagName(tag2).dom()
+            if(doms.length === 0){
+                arrs = arrs.concat(domparse(el).getDoubleComplexElementsByTagName(tag2).dom())
+            }else{
+                arrs = arrs.concat(doms)
+            }
+        }
+    })
+    this.__arrs = arrs
+    return this
+}
+
+/* 
+* @function getStringArrayByThreeTagName
+* @discription Get elements String by three tag names
+* @param tag1
+* @param tag2
+* @param tag3
+*/
+domparse.prototype.getStringArrayByThreeTagName = function(tag1,tag2,tag3){
+    var arrs = []
+    this.getStringArayByTwoTagName(tag1,tag2).each(el=>{
+        if(isSingleElement(tag3)){
+            arrs = arrs.concat(domparse(el).getSingleStringArrayByTagName(tag3).dom())
+        }else{
+            arrs = arrs.concat(domparse(el).getDoubleStringArrayByTagName(tag3).dom())
+        }
+    })
+    this.__arrs = arrs
+    return this
+}
+
+/* 
+* @function getElementsByThreeTagName
+* @discription Get elements by three tag names
+* @param tag1
+* @param tag2
+* @param tag3
+*/
+domparse.prototype.getElementsByThreeTagName = function(tag1,tag2,tag3){
+    var arrs = []
+    this.getStringArayByTwoTagName(tag1,tag2).each(el=>{
+        if(isSingleElement(tag3)){
+            arrs = arrs.concat(domparse(el).getSingleElementsByTagName(tag3).dom())
+        }else{
+            var doms = domparse(el).getDoubleElementsByTagName(tag3).dom()
+            if(doms.length === 0){
+                arrs = arrs.concat(domparse(el).getDoubleComplexElementsByTagName(tag3).dom())
+            }else{
+                arrs = arrs.concat(doms)
+            }
+        }
+    })
+    this.__arrs = arrs
+    return this
+}
+
+/* 
+* @function getStringArrayByTwoTagNameAndClassName
+* @discription Get elements String by two tag names and class name
+* @param tag1
+* @param class1
+* @param tag2
+* @param class2
+*/
+domparse.prototype.getStringArrayByTwoTagNameAndClassName = function(tag1,class1,tag2,class2){
+    if(!Array.isArray(class1)){
+        class1 = [class1]
+    }
+    if(!Array.isArray(class2)){
+        class2 = [class2]
+    }
+    var arrs = []
+    this.getDoubleStringArrayByTagNameAndClassName(tag1,...class1).each(el=>{
+        if(isSingleElement(tag2)){
+            arrs = arrs.concat(domparse(el).getSingleStringArrayByTagNameAndClassName(tag2,...class2).dom())
+        }else{
+            arrs = arrs.concat(domparse(el).getDoubleStringArrayByTagNameAndClassName(tag2,...class2).dom())
+        }
+    })
+    this.__arrs = arrs
+    return this
+}
+
+/* 
+* @function getElementsByTwoTagNameAndClassName
+* @discription Get elements String by two tag names and class name
+* @param tag1
+* @param class1
+* @param tag2
+* @param class2
+*/
+domparse.prototype.getElementsByTwoTagNameAndClassName = function(tag1,class1,tag2,class2){
+    if(!Array.isArray(class1)){
+        class1 = [class1]
+    }
+    if(!Array.isArray(class2)){
+        class2 = [class2]
+    }
+    var arrs = []
+    this.getDoubleStringArrayByTagNameAndClassName(tag1,...class1).each(el=>{
+        if(isSingleElement(tag2)){
+            arrs = arrs.concat(domparse(el).getSingleElementsByTagNameAndClassName(tag2,...class2).dom())
+        }else{
+            arrs = arrs.concat(domparse(el).getDoubleElementsByTagNameAndClassName(tag2,...class2).dom())
+        }
+    })
+    this.__arrs = arrs
+    return this
+}
+
+/* 
+* @function getStringArrayByThreeTagNameAndClassName
+* @discription Get elements String by three tag names and class name
+* @param tag1
+* @param class1
+* @param tag2
+* @param class2
+* @param tag3
+* @param class3
+*/
+domparse.prototype.getStringArrayByThreeTagNameAndClassName = function(tag1,class1,tag2,class2,tag3,class3){
+    if(!Array.isArray(class1)){
+        class1 = [class1]
+    }
+    if(!Array.isArray(class2)){
+        class2 = [class2]
+    }
+    if(!Array.isArray(class3)){
+        class3 = [class3]
+    }
+    var arrs = []
+    this.getStringArrayByTwoTagNameAndClassName(tag1,class1,tag2,class2).each(el=>{
+        arrs = arrs.concat(domparse(el).getStringArrayByTagNameAndClassName(tag3,...class3).dom())
+    })
+    this.__arrs = arrs
+    return this
+}
+
+/* 
+* @function getElementsByThreeTagNameAndClassName
+* @discription Get elements by three tag names and class name
+* @param tag1
+* @param class1
+* @param tag2
+* @param class2
+* @param tag3
+* @param class3
+*/
+domparse.prototype.getElementsByThreeTagNameAndClassName = function(tag1,class1,tag2,class2,tag3,class3){
+    if(!Array.isArray(class1)){
+        class1 = [class1]
+    }
+    if(!Array.isArray(class2)){
+        class2 = [class2]
+    }
+    if(!Array.isArray(class3)){
+        class3 = [class3]
+    }
+    var arrs = []
+    this.getElementsByTwoTagNameAndClassName(tag1,class1,tag2,class2).each(el=>{
+        arrs = arrs.concat(domparse(el).getElementsByTagNameAndClassName(tag3,...class3).dom())
+    })
+    this.__arrs = arrs
+    return this
+}
+
 // 优先使用 标签名 来进行检索会提高效率
 domparse.prototype.find = function(){
     var name = Array.from(arguments)
@@ -451,6 +691,31 @@ domparse.prototype.find = function(){
         }
     }else if(name.length === 1){
         var ns = name[0]
+        var nsp = ns.split(/\s+/g)
+        if(nsp.length > 1){
+            if(nsp.length === 2){
+                // 说明在进行2级层级搜索，例如：find("ul.slider-box li.slider-item")
+                var nsp1 = nsp[0].split(".")
+                var tag1 = nsp1.shift()
+                var class1 = nsp1
+                var nsp2 = nsp[1].split(".")
+                var tag2 = nsp2.shift()
+                var class2 = nsp2
+                return this.getElementsByTwoTagNameAndClassName(tag1,class1,tag2,class2)
+            }
+            if(nsp.length === 3){
+                var nsp1 = nsp[0].split(".")
+                var tag1 = nsp1.shift()
+                var class1 = nsp1
+                var nsp2 = nsp[1].split(".")
+                var tag2 = nsp2.shift()
+                var class2 = nsp2
+                var nsp3 = nsp[2].split(".")
+                var tag3 = nsp3.shift()
+                var class3 = nsp3
+                return this.getElementsByThreeTagNameAndClassName(tag1,class1,tag2,class2,tag3,class3)
+            }
+        }
         if(/^\./g.test(ns)){
             // 说明是以.开头，那么就是以 类名 进行检索
             var narrs = ns.replace(/^\./,"").split(".")
@@ -540,3 +805,38 @@ domparse.prototype.querySelectorAll = function(name){
 
 
 module.exports = domparse
+
+
+// var s = `<div class="container">
+//             <ul class="slider-box">
+//                 <img class="link-title" src="http://demo1.com/title.png" >
+//                 <li class="slider-item">
+//                     <h1 class="title">slider-header1</h1>
+//                     <a class="item-link" href="http://demo1.com" target="_blank">
+//                         <img class="link-img" src="http://demo1.com/show.png" />
+//                         <span class="link-text">welcome to demo1.com</span>
+//                     </a>
+//                 </li>
+//                 <img class="link-title" src="http://demo2.com/title.png" >
+//                 <li class="slider-item">
+//                     <h1 class="title">slider-header2</h1>
+//                     <a class="item-link" href="http://demo2.com" target="_blank">
+//                         <img class="link-img" src="http://demo2.com/show.png" />
+//                         <span class="link-text">welcome to demo2.com</span>
+//                     </a>
+//                 </li>
+//                 <img class="link-title" src="http://demo3.com/title.png" >
+//                 <li class="slider-view">
+//                     <h1 class="title">slider-header3</h1>
+//                     <a class="item-link" href="http://demo3.com" target="_blank">
+//                         <img class="link-img" src="http://demo3.com/show.png" />
+//                         <span class="link-text">welcome to demo3.com</span>
+//                     </a>
+//                 </li>
+//             </ul>
+//         </div>`
+
+// var $ = domparse
+// $(s).find("ul.slider-box li.slider-view a").each(el=>{
+//     console.log(el)
+// })
