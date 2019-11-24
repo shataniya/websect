@@ -1,6 +1,6 @@
 {
   "name": "websect",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Similar to cheerio's quick capture of Web Information",
   "main": "index.js",
   "scripts": {
@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/shataniya/websect/issues"
   },
-  "homepage": "https://github.com/shataniya/websect#readme"
+  "homepage": "https://github.com/shataniya/websect#readme",
+  "dependencies": {
+    "xmlhttprequest": "^1.8.0"
+  }
 }

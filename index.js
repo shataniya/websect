@@ -825,7 +825,10 @@ domparse.prototype.querySelectorAll = function(name){
     return this.getElementsByTagName(name)
 }
 
-
+const ajax = require("./ajax")
+domparse.ajax = ajax
+domparse.get = ajax.get
+domparse.post = ajax.post
 
 
 module.exports = domparse
