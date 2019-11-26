@@ -6,3 +6,240 @@
 >https://blog.csdn.net/qq_41672008/article/details/103206762
 >https://blog.csdn.net/qq_41672008/article/details/103213798
 >https://blog.csdn.net/qq_41672008/article/details/103214644
+##### websect的原理
+- websect 实际上就是一个处理 html字符串的方法，可以把 html字符串解析成dom形式，这里的dom并不是想浏览器里真正的dom，而是一个dom解析的js对象，举个例子：
+```javascript
+const $ = require("websect")
+var s = `<p class="title" id="title">hello world</p>`
+var p = $(s).find("p").dom()
+console.log(p)
+```
+- 解析成dom的js对象：
+```javascript
+sataniyadeMBP:ajax sataniya$ node op
+[
+  complexdom {
+    type: 'complex dom',
+    innerHTML: 'hello world',
+    tagName: 'p',
+    class: 'title',
+    id: 'title'
+  }
+]
+sataniyadeMBP:ajax sataniya$ 
+```
+- 你可以看到，`<p class="title" id="title">hello world</p>`被解析成一个`complexdom类的实例`,里面有很多属性，像`innerHMTL`,`tagName`,`class`,`id`，这都是为了模拟真正的dom而特意设计成这样的
+##### `find(selector)`
+- `find(selector)`的参数实际上是一个选择器，类似于JQuery，**功能是找到选择器指定的dom并进行解析，并生成一个dom数组**，你可以调用`dom()`来获取解析之后的dom数组，举个例子：
+```javascript
+// 先定义一个模版字符串s
+var s = `<div class="container">
+            <h1>hello world</h1>
+            <ul class="slider">
+                <li class="slider-item">
+                    <img class="slider-item-img" src="" data-src="http://op.com/demo1.png" alt="美女" title="美女" />
+                    <p class="desc">这是一张美女图片</p>
+                </li>
+                <li class="slider-item">
+                    <img class="slider-item-img" src="" data-src="http://op.com/demo2.png" alt="大海" title="大海" />
+                    <p class="desc">这是一张大海图片</p>
+                </li>
+                <li class="slider-item">
+                    <img class="slider-item-img" src="" data-src="http://op.com/demo3.png" alt="星空" title="星空" />
+                    <p class="desc">这是一张星空图片</p>
+                </li>
+            </ul>
+        </div>`
+```
+- 现在使用`find()`函数来进行解析：
+- 比如说我想要获取h1标题：
+```javascript
+const $ = require("websect")
+var p = $(s).find("h1").dom() // 这里的dom() 函数就是获取所有的结果
+console.log(p)
+```
+
+```javascript
+sataniyadeMBP:ajax sataniya$ node op
+[
+  complexdom {
+    type: 'complex dom',
+    innerHTML: 'hello world',
+    tagName: 'h1',
+    class: 'title'
+  }
+]
+```
+- 如果想要获取所有的li：
+
+```javascript
+const $ = require("websect")
+var p = $(s).find("li").dom()
+console.log(p)
+```
+```javascript
+sataniyadeMBP:ajax sataniya$ node op
+[
+  complexdom {
+    type: 'complex dom',
+    innerHTML: '\n' +
+      '                    <img class="slider-item-img" src="" data-src="http://op.com/demo1.png" alt="美女" 
+title="美女" />\n' +
+      '                    <p class="desc">这是一张美女图片</p>\n' +
+      '                ',
+    tagName: 'li',
+    class: 'slider-item'
+  },
+  complexdom {
+    type: 'complex dom',
+    innerHTML: '\n' +
+      '                    <img class="slider-item-img" src="" data-src="http://op.com/demo2.png" alt="大海" title="大海" />\n' +
+      '                    <p class="desc">这是一张大海图片</p>\n' +
+      '                ',
+    tagName: 'li',
+    class: 'slider-item'
+  },
+  complexdom {
+    type: 'complex dom',
+    innerHTML: '\n' +
+      '                    <img class="slider-item-img" src="" data-src="http://op.com/demo3.png" alt="星空" title="星空" />\n' +
+      '                    <p class="desc">这是一张星空图片</p>\n' +
+      '                ',
+    tagName: 'li',
+    class: 'slider-item'
+  }
+]
+sataniyadeMBP:ajax sataniya$ 
+```
+- 如果想要获取所有的img：
+```javascript
+const $ = require("websect")
+var p = $(s).find("img").dom()
+console.log(p)
+```
+
+```javascript
+sataniyadeMBP:ajax sataniya$ node op
+[
+  dom {
+    type: 'single dom',
+    tagName: 'img',
+    class: 'slider-item-img',
+    src: [],
+    'data-src': 'http://op.com/demo1.png',
+    alt: '美女',
+    title: '美女'
+  },
+  dom {
+    type: 'single dom',
+    tagName: 'img',
+    class: 'slider-item-img',
+    src: [],
+    'data-src': 'http://op.com/demo2.png',
+    alt: '大海',
+    title: '大海'
+  },
+  dom {
+    type: 'single dom',
+    tagName: 'img',
+    class: 'slider-item-img',
+    src: [],
+    'data-src': 'http://op.com/demo3.png',
+    alt: '星空',
+    title: '星空'
+  }
+]
+sataniyadeMBP:ajax sataniya$ 
+```
+- 如果你想获取所有对图片的描述，即标签p：
+
+```javascript
+const $ = require("websect")
+var p = $(s).find("p").dom()
+console.log(p)
+```
+
+```javascript
+sataniyadeMBP:ajax sataniya$ node op
+[
+  complexdom {
+    type: 'complex dom',
+    innerHTML: '这是一张美女图片',
+    tagName: 'p',
+    class: 'desc'
+  },
+  complexdom {
+    type: 'complex dom',
+    innerHTML: '这是一张大海图片',
+    tagName: 'p',
+    class: 'desc'
+  },
+  complexdom {
+    type: 'complex dom',
+    innerHTML: '这是一张星空图片',
+    tagName: 'p',
+    class: 'desc'
+  }
+]
+sataniyadeMBP:ajax sataniya$ 
+```
+##### `text()`
+- `text()` 的功能是 获取`复合符合条件的第一个元素的内容`，举个例子：
+```javascript
+const $ = require("websect")
+var p = $(s).find("p").text()
+console.log(p)
+```
+
+```javascript
+sataniyadeMBP:ajax sataniya$ node op
+这是一张美女图片
+sataniyadeMBP:ajax sataniya$ 
+```
+- 可以看见，只返回了一个p标签的内容，但是实际上有三个p标签，`之所以这么设计是因为大部分的需求只是一个`
+##### `attr(name)`
+- `attr(name)` 功能就是 获取`复合条件的第一个元素的指定的属性值`，举个例子：
+
+```javascript
+const $ = require("websect")
+var p = $(s).find("img").attr("data-src")
+console.log(p)
+```
+
+```javascript
+sataniyadeMBP:ajax sataniya$ node op
+http://op.com/demo1.png
+sataniyadeMBP:ajax sataniya$ 
+```
+##### `each()`
+- `each()` 用于遍历解析之后的dom数组
+
+```javascript
+const $ = require("websect")
+$(s).find("p").each(el=>{
+    console.log(el)
+})
+```
+
+```javascript
+sataniyadeMBP:ajax sataniya$ node op
+complexdom {
+  type: 'complex dom',
+  innerHTML: '这是一张美女图片',
+  tagName: 'p',
+  class: 'desc'
+}
+complexdom {
+  type: 'complex dom',
+  innerHTML: '这是一张大海图片',
+  tagName: 'p',
+  class: 'desc'
+}
+complexdom {
+  type: 'complex dom',
+  innerHTML: '这是一张星空图片',
+  tagName: 'p',
+  class: 'desc'
+}
+sataniyadeMBP:ajax sataniya$ 
+```
