@@ -192,6 +192,84 @@ domparse.prototype.getDoubleStringArrayByTagName = function(name){
 * @function getStringArrayByClassName
 */
 
+/* 
+* @function getDoubleStringArrayByTagNameAndOnlyClassName  只根据 标签名 和 类名 精确获取双标签dom的字符串形式
+* @param name 参数：标签名
+* @param classname 参数：类名（要以数组的形式）
+*/
+domparse.prototype.getDoubleStringArrayByTagNameAndOnlyClassName = function(name,...classname){
+    var reg = new RegExp('<'+name+'\\s+class="'+classname.join(" ")+'">.*?<\/'+name+'>',"g")
+    var arrs = []
+    this.__domstr.replace(reg,(match)=>{
+        arrs.push(match)
+    })
+    this.__arrs = arrs
+    return this
+}
+
+/* 
+* @function getDoubleElementsByTagNameAndOnlyClassName  只根据 标签名 和 类名 精确获取双标签dom的解析形式
+* @param name 参数：标签名
+* @param classname 参数：类名（要以数组的形式）
+*/
+domparse.prototype.getDoubleElementsByTagNameAndOnlyClassName = function(name,...classname){
+    this.__arrs = this.getDoubleStringArrayByTagNameAndOnlyClassName(name,...classname).dom().map(el=>new complexdom(el,this.__domstr))
+    return this
+}
+
+/* 
+* @function getSingleStringArrayByTagNameAndOnlyClassName  只根据 标签名 和 类名 精确获取单标签dom的字符串形式
+* @param name 参数：标签名
+* @param classname 参数：类名（要以数组的形式）
+*/
+domparse.prototype.getSingleStringArrayByTagNameAndOnlyClassName = function(name,...classname){
+    var reg = new RegExp('<'+name+'\\s+class="'+classname.join(" ")+'"\\s*\/?>',"g")
+    var arrs = []
+    this.__domstr.replace(reg,(match)=>{
+        arrs.push(match)
+    })
+    this.__arrs = arrs
+    return this
+}
+
+/* 
+* @function getSingleElementsByTagNameAndOnlyClassName  只根据 标签名 和 类名 精确获取单标签dom的解析形式
+* @param name 参数：标签名
+* @param classname 参数：类名（要以数组的形式）
+*/
+domparse.prototype.getSingleElementsByTagNameAndOnlyClassName = function(name,...classname){
+    this.__arrs = this.getSingleStringArrayByTagNameAndOnlyClassName(name,...classname).dom().map(el=>new dom(el,this.__domstr))
+    return this
+}
+
+/* 
+* @function getStringArrayByTagNameAndOnlyClassName  只根据 标签名 和 类名 精确获取标签dom的字符串形式
+* @param name 参数：标签名
+* @param classname 参数：类名（要以数组的形式）
+*/
+domparse.prototype.getStringArrayByTagNameAndOnlyClassName = function(name,...classname){
+    if(isSingleElement(name)){
+        this.__arrs = this.getSingleStringArrayByTagNameAndOnlyClassName(name,...classname).dom()
+    }else{
+        this.__arrs = this.getDoubleStringArrayByTagNameAndOnlyClassName(name,...classname).dom()
+    }
+    return this
+}
+
+/* 
+* @function getElementsByTagNameAndOnlyClassName  只根据 标签名 和 类名 精确获取标签dom的解析形式
+* @param name 参数：标签名
+* @param classname 参数：类名（要以数组的形式）
+*/
+domparse.prototype.getElementsByTagNameAndOnlyClassName = function(name,...classname){
+    if(isSingleElement(name)){
+        this.__arrs = this.getSingleElementsByTagNameAndOnlyClassName(name,...classname).dom()
+    }else{
+        this.__arrs = this.getDoubleElementsByTagNameAndOnlyClassName(name,...classname).dom()
+    }
+    return this
+}
+
 // 通过 类名 获取标签的字符串形式
 domparse.prototype.getStringArrayByClassName = function(){
     var name = Array.from(arguments)
@@ -246,7 +324,7 @@ domparse.prototype.getDoubleStringArrayByTagNameAndClassName = function(name,...
         this.__arrs = doms
         return this
     }
-    var reg = new RegExp('<\\b'+name+'\\b([^<>]*)class="([^<>]*)\\b'+classname.join(" ")+'\\b([^<>]*)"([^<>]*)>([\\w\\W]+?)<\/\\b'+name+'\\b>')
+    var reg = new RegExp('<'+name+'([^<>]*)class="([^\<\>]*)\\b'+classname.join(" ")+'\\b([^<>]*)"([^<>]*)>([\\w\\W]+?)<\/'+name+'>',"g")
     var ndoms = []
     doms.forEach(el=>{
         el.replace(reg,(match)=>{
@@ -261,7 +339,12 @@ domparse.prototype.getDoubleStringArrayByTagNameAndClassName = function(name,...
 
 // 根据 标签名 和 类名 来获取双标签的dom解析形式
 domparse.prototype.getDoubleElementsByTagNameAndClassName = function(name,...classname){
-    this.__arrs = this.getDoubleStringArrayByTagNameAndClassName(name,...classname).dom().map(el=>new complexdom(el,this.__domstr))
+    var doms = this.getDoubleStringArrayByTagNameAndClassName(name,...classname).dom().map(el=>new complexdom(el,this.__domstr))
+    if(doms.length === 0){
+        // 一旦发现通过 模糊搜索得不到结果，那么就会进行 精确搜索
+        doms = this.getDoubleElementsByTagNameAndOnlyClassName(name,...classname).dom()
+    }
+    this.__arrs = doms
     return this
 }
 
@@ -613,7 +696,8 @@ domparse.prototype.getElementsByTwoTagNameAndClassName = function(tag1,class1,ta
         if(isSingleElement(tag2)){
             arrs = arrs.concat(domparse(el).getSingleElementsByTagNameAndClassName(tag2,...class2).dom())
         }else{
-            arrs = arrs.concat(domparse(el).getDoubleElementsByTagNameAndClassName(tag2,...class2).dom())
+            var doms = domparse(el).getDoubleElementsByTagNameAndClassName(tag2,...class2).dom()
+            arrs = arrs.concat(doms)
         }
     })
     this.__arrs = arrs
