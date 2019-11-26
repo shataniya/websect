@@ -128,10 +128,42 @@ domparse.prototype.attr = function(name){
     return this.__arrs[name]
 }
 
+/* 
+* @function attrall
+* @discription Get all properties
+* @param name 属性名
+*/
+domparse.prototype.attrall = function(name){
+    if(Array.isArray(this.__arrs) && this.__arrs.length >= 1){
+        return this.__arrs.map(el=>el[name])
+    }
+    if(this.__arrs == null){
+        // 如果 this.__arrs 不存在，那么返回 null
+        return null
+    }
+    // 不满足以上情况，说明不是一个数组，但是存在，因此只能是单独的一个元素
+    return this.__arrs[name]
+}
+
+
 // 获取元素内部的文本
 domparse.prototype.text = function(){
     if(Array.isArray(this.__arrs) && this.__arrs.length >= 1){
         return this.__arrs[0].innerHTML
+    }
+    if(this.__arrs == null){
+        return this.__domstr
+    }
+    return this.__arrs.innerHTML
+}
+
+/* 
+* @funciton textall
+* @discription Get all text
+*/
+domparse.prototype.textall = function(){
+    if(Array.isArray(this.__arrs) && this.__arrs.length >= 1){
+        return this.__arrs.map(el=>el.innerHTML)
     }
     if(this.__arrs == null){
         return this.__domstr
@@ -761,7 +793,15 @@ domparse.prototype.getElementsByThreeTagNameAndClassName = function(tag1,class1,
 }
 
 function __info(str){
-    var ins = str.replace(/<([^<>]+)\/?>([\w\W]+?)<\/([^<>]+)>/g,"").replace(/<([^<>]+)\/?>/g,"").trim().split(/\n?\s+/g)
+    var ins = str.replace(/<([^<>]+)\/?>([\w\W]+?)<\/([^<>]+)>/g,"").replace(/<([^<>]+)\/?>/g,"").trim().split(/\s+/g)
+    if(ins.length > 1){
+        return ins
+    }
+    return ins[0]
+}
+
+function __infoall(str){
+    var ins = str.replace(/<([^<>]+?)>/g,"").trim().split(/\s+/g)
     if(ins.length > 1){
         return ins
     }
@@ -770,7 +810,7 @@ function __info(str){
 
 /* 
 * @function info
-* @discription Text obtained after filtering all tags
+* @discription Text obtained after filtering all tags 获取最外层的文字内容
 * 
 */
 domparse.prototype.info = function(){
@@ -783,6 +823,20 @@ domparse.prototype.info = function(){
     return __info(this.__arrs.innerHTML)
 }
 
+/* 
+* @function infoall
+* @discription 获取所有的文字内容
+* 
+*/
+domparse.prototype.infoall = function(){
+    if(Array.isArray(this.__arrs) && this.__arrs.length >= 1){
+        return this.__arrs.map(el=>__infoall(el.innerHTML))
+    }
+    if(this.__arrs == null){
+        return __infoall(this.__domstr)
+    }
+    return __infoall(this.__arrs.innerHTML)
+}
 
 // 优先使用 标签名 来进行检索会提高效率
 domparse.prototype.find = function(){
