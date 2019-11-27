@@ -3,8 +3,9 @@ const ajax = (function(){
     var xhr = new XMLHttpRequest()
     return {
         get:function(url){
+            var URL = encodeURI(url)
             return new Promise((resolve,reject)=>{
-                xhr.open("GET",url,true)
+                xhr.open("GET",URL,true)
                 xhr.send(null)
                 xhr.onreadystatechange = function(){
                     if(xhr.readyState === 4){
@@ -18,8 +19,9 @@ const ajax = (function(){
             })
         },
         post:function(url,data){
+            var URL = encodeURI(url)
             return new Promise((resolve,reject)=>{
-                xhr.open("POST",url,true)
+                xhr.open("POST",URL,true)
                 xhr.send(formate(data))
                 xhr.onreadystatechange = function(){
                     if(xhr.readyState === 4){
