@@ -2,10 +2,6 @@
 ##### 一个比 cheerio 还快的网页信息爬取工具
 ##### 下载方式：
 >npm i websect
-#### 以下是使用教程链接：
->https://blog.csdn.net/qq_41672008/article/details/103206762
->https://blog.csdn.net/qq_41672008/article/details/103213798
->https://blog.csdn.net/qq_41672008/article/details/103214644
 ##### websect的原理
 - websect 实际上就是一个处理 html字符串的方法，可以把 html字符串解析成dom形式，这里的dom并不是想浏览器里真正的dom，而是一个dom解析的js对象，举个例子：
 ```javascript
@@ -48,13 +44,25 @@ var s = `<div class="container">
                     <img class="slider-item-img" src="" data-src="http://op.com/demo3.png" alt="星空" title="星空" />
                     <p class="desc">这是一张星空图片</p>
                 </li>
+                <li class="slider-footer">
+                    今天天气真好啊！
+                    <h1 class="top">hello, is good day!</h1>
+                    你是不是傻！
+                    <p class="desc">you is nod good.</p>
+                    哇，美女过来了23333
+                </li>
             </ul>
         </div>`
 ```
+- `引入 websect`
+
+```javascript
+const $ = require("websect")
+```
+
 - 现在使用`find()`函数来进行解析：
 - 比如说我想要获取h1标题：
 ```javascript
-const $ = require("websect")
 var p = $(s).find("h1").dom() // 这里的dom() 函数就是获取所有的结果
 console.log(p)
 ```
@@ -70,11 +78,10 @@ sataniyadeMBP:ajax sataniya$ node op
   }
 ]
 ```
-- 如果想要获取所有的li：
+- 如果想要获取所有类名为 `slider-item` 的li：
 
 ```javascript
-const $ = require("websect")
-var p = $(s).find("li").dom()
+var p = $(s).find("li.slider-item").dom()
 console.log(p)
 ```
 ```javascript
@@ -113,7 +120,6 @@ sataniyadeMBP:ajax sataniya$
 ```
 - 如果想要获取所有的img：
 ```javascript
-const $ = require("websect")
 var p = $(s).find("img").dom()
 console.log(p)
 ```
@@ -154,8 +160,7 @@ sataniyadeMBP:ajax sataniya$
 - 如果你想获取所有对图片的描述，即标签p：
 
 ```javascript
-const $ = require("websect")
-var p = $(s).find("p").dom()
+var p = $(s).find("li.slider-item p").dom()
 console.log(p)
 ```
 
@@ -184,9 +189,8 @@ sataniyadeMBP:ajax sataniya$ node op
 sataniyadeMBP:ajax sataniya$ 
 ```
 ##### `text()`
-- `text()` 的功能是 获取`复合符合条件的第一个元素的内容`，举个例子：
+- `text()` 的功能是 获取`第一个符合条件的元素的内容`，举个例子：
 ```javascript
-const $ = require("websect")
 var p = $(s).find("p").text()
 console.log(p)
 ```
@@ -197,11 +201,24 @@ sataniyadeMBP:ajax sataniya$ node op
 sataniyadeMBP:ajax sataniya$ 
 ```
 - 可以看见，只返回了一个p标签的内容，但是实际上有三个p标签，`之所以这么设计是因为大部分的需求只是一个`
-##### `attr(name)`
-- `attr(name)` 功能就是 获取`复合条件的第一个元素的指定的属性值`，举个例子：
+##### `textall()`
+- `textall()` 的功能是 `获取符合条件的所有元素的内容`，算是对 `text()`的补充：
 
 ```javascript
-const $ = require("websect")
+var p = $(s).find("li.slider-item p").textall()
+console.log(p)
+```
+
+```javascript
+sataniyadeMacBook-Pro:ajax sataniya$ node op
+[ '这是一张美女图片', '这是一张大海图片', '这是一张星空图片' ]
+sataniyadeMacBook-Pro:ajax sataniya$ 
+```
+
+##### `attr(name)`
+- `attr(name)` 功能就是 获取`第一个符合条件的元素的指定的属性值`，举个例子：
+
+```javascript
 var p = $(s).find("img").attr("data-src")
 console.log(p)
 ```
@@ -211,12 +228,30 @@ sataniyadeMBP:ajax sataniya$ node op
 http://op.com/demo1.png
 sataniyadeMBP:ajax sataniya$ 
 ```
+##### `attrall(name)`
+- `attrall(name)` 功能就是 获取`符合条件的所有元素的指定属性值`
+
+```javascript
+var p = $(s).find("li.slider-item img").attrall("data-src")
+console.log(p)
+```
+
+```javascript
+sataniyadeMacBook-Pro:ajax sataniya$ node op
+[
+  'http://op.com/demo1.png',
+  'http://op.com/demo2.png',
+  'http://op.com/demo3.png'
+]
+sataniyadeMacBook-Pro:ajax sataniya$ 
+```
+
 ##### `each()`
 - `each()` 用于遍历解析之后的dom数组
 
 ```javascript
 const $ = require("websect")
-$(s).find("p").each(el=>{
+$(s).find("li.slider-item p").each(el=>{
     console.log(el)
 })
 ```
@@ -243,3 +278,60 @@ complexdom {
 }
 sataniyadeMBP:ajax sataniya$ 
 ```
+##### `info()`
+- `info()` 就是获取 `第一个符合条件的元素的的最外层文本节点（即 textNode）`
+
+```javascript
+var p = $(s).find("li.slider-footer").info()
+console.log(p)
+```
+
+```javascript
+sataniyadeMacBook-Pro:ajax sataniya$ node op
+[ '今天天气真好啊！', '你是不是傻！', '哇，美女过来了23333' ]
+sataniyadeMacBook-Pro:ajax sataniya$ 
+```
+- 对比一下 `li.slider-footer` 指定的元素：
+
+```javascript
+<li class="slider-footer">
+    今天天气真好啊！
+    <h1 class="top">hello, is good day!</h1>
+    你是不是傻！
+    <p class="desc">you is nod good.</p>
+    哇，美女过来了23333
+</li>
+```
+- 可以清楚的看到，`只有最外层的文本节点被获取`，这就是 `info()` 函数的使用，**但是如果我想获取所有的文本节点呢？**
+##### `infoall()`
+- `infoall()` 就是 获取 `第一个符合条件的元素内的所有文本节点`
+
+```javascript
+var p = $(s).find("li.slider-footer").infoall()
+console.log(p)
+```
+
+```javascript
+sataniyadeMacBook-Pro:ajax sataniya$ node op
+[
+  '今天天气真好啊！',
+  'hello, is good day!',
+  '你是不是傻！',
+  'you is nod good.',
+  '哇，美女过来了23333'
+]
+sataniyadeMacBook-Pro:ajax sataniya$ 
+```
+- 对比一下 `li.slider-footer` 指定的元素：
+
+```javascript
+<li class="slider-footer">
+    今天天气真好啊！
+    <h1 class="top">hello, is good day!</h1>
+    你是不是傻！
+    <p class="desc">you is nod good.</p>
+    哇，美女过来了23333
+</li>
+```
+- 确实是获取了所有的文本节点
+

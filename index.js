@@ -801,7 +801,7 @@ function __info(str){
 }
 
 function __infoall(str){
-    var ins = str.replace(/<([^<>]+?)>/g,"").trim().split(/\s+/g)
+    var ins = str.replace(/<([^<>]+?)>/g,"#").trim().split(/#+/g)
     if(ins.length > 1){
         return ins
     }
@@ -830,7 +830,7 @@ domparse.prototype.info = function(){
 */
 domparse.prototype.infoall = function(){
     if(Array.isArray(this.__arrs) && this.__arrs.length >= 1){
-        return this.__arrs.map(el=>__infoall(el.innerHTML))
+        return __infoall(this.__arrs[0].innerHTML).map(el=>el.trim())
     }
     if(this.__arrs == null){
         return __infoall(this.__domstr)

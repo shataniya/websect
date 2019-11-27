@@ -1,6 +1,6 @@
 {
   "name": "websect",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Similar to cheerio's quick capture of Web Information",
   "main": "index.js",
   "scripts": {
