@@ -968,6 +968,11 @@ domparse.ajax = ajax
 domparse.get = ajax.get
 domparse.post = ajax.post
 
+const jmd = require("./jmd")
+domparse.jmd = jmd
+domparse.stringify = jmd.stringify
+domparse.parse = jmd.parse
+
 
 module.exports = domparse
 
