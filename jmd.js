@@ -8,6 +8,7 @@ const jmd = (function(){
             if(typeof obj === "object" && obj !== null){
                 return JSON.stringify(obj,null,5)
             }
+            return JSON.stringify(obj,null,5)
         },
         parse:function(obj){
             var o = JSON.parse(obj)
@@ -18,6 +19,7 @@ const jmd = (function(){
             if(typeof o === "object" && o !== null){
                 return o
             }
+            return JSON.parse(obj)
         }
     }
 })();
