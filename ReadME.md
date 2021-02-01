@@ -2,6 +2,30 @@
 ##### 一个比 cheerio 还快的网页信息爬取工具
 ##### 下载方式：
 >npm i websect
+##### 使用举例
+- 爬取小米官网到上屏信息
+```javascript
+const https = require('https');
+const $ = require('websect');
+
+https.request('https://www.mi.com', function (res) {
+  const chunks = [];
+  res.on('data', chunk => {
+    chunks.push(chunk);
+  });
+  res.on('end', function () {
+    const buf = Buffer.concat(chunks);
+    const Obj = [];
+    $(buf.toString()).find('ul.children-list.clearix li').each(el => {
+      const href = $(el).find('a').attr('href');
+      const src = $(el).find('img').attr('src');
+      const text = $(el).find('span').text();
+      Obj.push({ href, src, text });
+    });
+    console.log(Obj);
+  });
+}).end();
+```
 ##### websect的原理
 - websect 实际上就是一个处理 html字符串的方法，可以把 html字符串解析成dom形式，这里的dom并不是想浏览器里真正的dom，而是一个dom解析的js对象，举个例子：
 ```javascript
